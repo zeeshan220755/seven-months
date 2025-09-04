@@ -396,36 +396,7 @@
         }
       }
 
-      .nav-dot {
-        position: fixed;
-        right: 2rem;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .dot.active {
-        background: #fff;
-        transform: scale(1.5);
-      }
-
       @media (max-width: 768px) {
-        .nav-dot {
-          display: none;
-        }
-
         .section {
           padding: 1rem;
         }
@@ -441,17 +412,6 @@
     </style>
   </head>
   <body>
-    <!-- Navigation dots -->
-    <div class="nav-dot">
-      <div class="dot active" data-section="0"></div>
-      <div class="dot" data-section="1"></div>
-      <div class="dot" data-section="2"></div>
-      <div class="dot" data-section="3"></div>
-      <div class="dot" data-section="4"></div>
-      <div class="dot" data-section="5"></div>
-      <div class="dot" data-section="6"></div>
-    </div>
-
     <!-- Hero Section -->
     <section class="section hero">
       <div class="floating-hearts">
@@ -696,28 +656,15 @@
     </section>
 
     <script>
-      // Smooth scrolling and navigation
-      let currentSection = 0;
+      // Smooth scrolling
       const sections = document.querySelectorAll(".section");
-      const dots = document.querySelectorAll(".dot");
 
       // Scroll to section function
       function scrollToSection(index) {
-        sections[index].scrollIntoView({ behavior: "smooth" });
-        updateNavigation(index);
+        if (index >= 0 && index < sections.length) {
+          sections[index].scrollIntoView({ behavior: "smooth" });
+        }
       }
-
-      // Update navigation dots
-      function updateNavigation(index) {
-        dots.forEach((dot) => dot.classList.remove("active"));
-        dots[index].classList.add("active");
-        currentSection = index;
-      }
-
-      // Navigation dot clicks
-      dots.forEach((dot, index) => {
-        dot.addEventListener("click", () => scrollToSection(index));
-      });
 
       // Scroll detection for animations
       function isElementInViewport(el) {
@@ -763,23 +710,23 @@
           }
         });
 
-        // Update navigation based on scroll position
-        sections.forEach((section, index) => {
-          const rect = section.getBoundingClientRect();
-          if (
-            rect.top <= window.innerHeight / 2 &&
-            rect.bottom >= window.innerHeight / 2
-          ) {
-            if (currentSection !== index) {
-              updateNavigation(index);
-            }
-          }
-        });
       }
 
-      // Scroll event listener
+      // Scroll event listener for animations
       window.addEventListener("scroll", checkAnimations);
       window.addEventListener("load", checkAnimations);
+
+      // Get current section index
+      function getCurrentSectionIndex() {
+        let currentIndex = 0;
+        sections.forEach((section, index) => {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+            currentIndex = index;
+          }
+        });
+        return currentIndex;
+      }
 
       // Touch/swipe navigation for mobile
       let touchStartY = null;
@@ -799,24 +746,26 @@
 
         const swipeDistance = touchStartY - touchEndY;
         const minSwipeDistance = 50;
+        const currentIndex = getCurrentSectionIndex();
 
         if (Math.abs(swipeDistance) > minSwipeDistance) {
-          if (swipeDistance > 0 && currentSection < sections.length - 1) {
+          if (swipeDistance > 0) {
             // Swipe up - next section
-            scrollToSection(currentSection + 1);
-          } else if (swipeDistance < 0 && currentSection > 0) {
+            scrollToSection(currentIndex + 1);
+          } else {
             // Swipe down - previous section
-            scrollToSection(currentSection - 1);
+            scrollToSection(currentIndex - 1);
           }
         }
       }
 
       // Keyboard navigation
       document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowDown" && currentSection < sections.length - 1) {
-          scrollToSection(currentSection + 1);
-        } else if (e.key === "ArrowUp" && currentSection > 0) {
-          scrollToSection(currentSection - 1);
+        const currentIndex = getCurrentSectionIndex();
+        if (e.key === "ArrowDown") {
+          scrollToSection(currentIndex + 1);
+        } else if (e.key === "ArrowUp") {
+          scrollToSection(currentIndex - 1);
         }
       });
 
